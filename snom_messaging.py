@@ -5,6 +5,7 @@ import asyncio
 import xml.etree.ElementTree as ET
 import random
 from messagesystem import MessageSystem
+from consumer import ConsumerDriver
 
 logger = logging.getLogger(__name__)
 random.seed()
@@ -57,7 +58,8 @@ class UdpServer(asyncio.DatagramProtocol):
                         exception {}.".format(driver, exp)
                     )
             else:
-                logger.info("No driver is interested in this message.")
+                logger.warning("No driver is interested in this message. Dumping content.")
+                _prettyprint_mlstring(message, logger.warning)
 
     def error_received(self, exc):
         logger.debug("UDP Socket: Got exception: {}".format(exc))
@@ -81,7 +83,7 @@ class UdpServer(asyncio.DatagramProtocol):
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     logger.debug("Begin Setup...")
 
     loop = asyncio.get_event_loop()
@@ -92,7 +94,9 @@ def main():
     transport, protocol = loop.run_until_complete(sock)
 
     message_system = MessageSystem(protocol)
+    consumer_driver = ConsumerDriver(protocol)
 
+    logger.info("Snom Messaging started successfully.")
     try:
         loop.run_forever()
     except KeyboardInterrupt:
