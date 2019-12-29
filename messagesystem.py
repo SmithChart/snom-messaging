@@ -7,7 +7,15 @@ logger = logging.getLogger(__name__)
 
 class Message():
 
+    """
+    This class encapsulates a Text-Message with it's metadata.
+    """
+
     def __init__(self, xml_message):
+        """
+        Creates a Message from it's XML-Element-Tree representation.
+        """
+
         self.created = time.time()
         self.last_send_try = 0
 
@@ -22,6 +30,8 @@ class Message():
         self.sysdata_datetime = xml_message.find("./systemdata/datetime").text
         self.sysdata_ts = xml_message.find("./systemdata/timestamp").text
 
+        # This 10-Digit random number will be used as ID, when re-sending
+        # the message to it's recipient.
         self.internal_ext_id = random.randrange(9999999999+1)
 
     def get_messageresponse(self):
@@ -126,12 +136,25 @@ class Message():
 
 class MessageSystem():
 
+    """
+    This dictionary contains known status codes returned from BaseStations
+    after sending a message.
+
+    It contains the following information:
+    <statuscode>: (<Log-message String>, <Remove from Queue>)
+    """
     _snom_message_status = {
         1: ("Message delivered", True),
         11: ("User absent", False),
     }
 
     def __init__(self, udp_server):
+        """
+        Create a new MessageSystem.
+
+        This Message-System implements SMS-Communication with storage of
+        non-delivered messages for Snom DECT handsets.
+        """
         self._udp_server = udp_server
         self._queue = []
 
@@ -141,13 +164,25 @@ class MessageSystem():
         loop.create_task(self.process_outbox())
 
     def close(self):
+        #TODO: Implement proper shutdown of this function.
         pass
 
     def process(self, xml_message):
 
+        """
+        Process a message received via UDP.
+
+        We are interested in two typed of messages from the UDP-Socket:
+        * New Messages from Phones
+        * Status-Updates for messages we have sent
+
+        All other messages are not consumed.
+        """
+
         if xml_message.tag == "request" and xml_message.attrib["type"] == "job":
             # This is an incoming message. We will queue this message in our outbox and
             # send a reception confirmation to the sending phone.
+            # We do not track if the sending phone confirms our status update.
             logger.debug("Found incoming message. Trying to parse and add it to queue")
             m = Message(xml_message)
             self._queue.append(m)
@@ -201,6 +236,10 @@ class MessageSystem():
         return False
 
     async def process_outbox(self):
+
+        """
+        Process the queue of outgoing messages.
+        """
 
         while True:
             # check if any message is to resend
