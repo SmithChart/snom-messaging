@@ -104,7 +104,7 @@ def main():
         data = data.decode("UTF-8")
         print("\n\nReceived from {}".format(addr))
         for m in data.split("\0"):
-            if len(m) == 0:
+            if not m:
                 continue
             try:
                 r = ET.fromstring(m)
