@@ -19,7 +19,7 @@ class ConsumerDriver():
         self._udpserver = udp_server
         self._udpserver.register_driver(self)
 
-    def process(self, xml_message):
+    def process(self, xml_message, addr):
         """
         Process XML-Element-Tree Messages received via UDP.
 

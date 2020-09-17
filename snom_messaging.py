@@ -50,7 +50,7 @@ class UdpServer(asyncio.DatagramProtocol):
             for driver in self._drivers:
                 # check if we find any driver for this message
                 try:
-                    if driver.process(xml_message):
+                    if driver.process(xml_message, addr):
                         break
                 except Exception as exp:
                     logger.warning(
@@ -68,18 +68,22 @@ class UdpServer(asyncio.DatagramProtocol):
         logger.debug("Attached Driver {}".format(driver))
         self._drivers.append(driver)
 
-    def send_dgram(self, dgram):
+    def send_dgram(self, dgram, addr=None):
         """
         Sends the String in dgram over the socket to the last known
         origin.
         """
 
-        if not self._lastConnection:
+        if not self._lastConnection and addr is None:
             logger.warning("Writing to UDP-Socket before anything was received. Will not send!")
         else:
-            logger.debug("Outgoing Datagram to {}".format(self._lastConnection))
+            if addr is None:
+                out_addr = self._lastConnection
+            else:
+                out_addr = addr
+            logger.debug("Outgoing Datagram to {}".format(addr))
             _prettyprint_mlstring(dgram, logger.debug)
-            self._transport.sendto(dgram.encode("UTF-8"), self._lastConnection)
+            self._transport.sendto(dgram.encode("UTF-8"), addr)
 
 
 def main():

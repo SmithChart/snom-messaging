@@ -163,11 +163,13 @@ class MessageSystem():
         loop = asyncio.get_event_loop()
         loop.create_task(self.process_outbox())
 
+        self._roaming_monitor = roaming_monitor
+
     def close(self):
         #TODO: Implement proper shutdown of this function.
         pass
 
-    def process(self, xml_message):
+    def process(self, xml_message, addr):
 
         """
         Process a message received via UDP.
