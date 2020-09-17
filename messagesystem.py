@@ -148,7 +148,7 @@ class MessageSystem():
         11: ("User absent", False),
     }
 
-    def __init__(self, udp_server):
+    def __init__(self, udp_server, roaming_monitor):
         """
         Create a new MessageSystem.
 
@@ -191,7 +191,7 @@ class MessageSystem():
             logger.info("Added Message with external ID %s and internal id %s", m.ext_id, m.internal_ext_id)
 
             # send confirmation to sender
-            self._udp_server.send_dgram(m.get_messageresponse())
+            self._udp_server.send_dgram(m.get_messageresponse(), addr)
             logger.debug("Confirmation for sender sent!")
 
             return True
@@ -248,7 +248,7 @@ class MessageSystem():
             for message in self._queue:
                 if (time.time() - message.last_send_try) > 60:
                     logger.debug("Sending message %s", message.internal_ext_id)
-                    self._udp_server.send_dgram(message.get_message())
+                    self._udp_server.send_dgram(message.get_message(), self._roaming_monitor.get_addr(message.to_ext))
                     message.last_send_try = time.time()
 
             # purge all messages older than

@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 import random
 from messagesystem import MessageSystem
 from consumer import ConsumerDriver
+from roaming import RoamingMonitor
 
 logger = logging.getLogger(__name__)
 random.seed()
@@ -97,7 +98,8 @@ def main():
     )
     transport, protocol = loop.run_until_complete(sock)
 
-    message_system = MessageSystem(protocol)
+    roaming_monitor = RoamingMonitor(protocol)
+    message_system = MessageSystem(protocol, roaming_monitor)
     consumer_driver = ConsumerDriver(protocol)
 
     logger.info("Snom Messaging started successfully.")
