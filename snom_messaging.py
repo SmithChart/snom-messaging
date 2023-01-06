@@ -82,9 +82,9 @@ class UdpServer(asyncio.DatagramProtocol):
                 out_addr = self._lastConnection
             else:
                 out_addr = addr
-            logger.debug("Outgoing Datagram to {}".format(addr))
+            logger.debug("Outgoing Datagram to {}".format(out_addr))
             _prettyprint_mlstring(dgram, logger.debug)
-            self._transport.sendto(dgram.encode("UTF-8"), addr)
+            self._transport.sendto(dgram.encode("UTF-8"), out_addr)
 
 
 def main():
